@@ -138,10 +138,14 @@ p {
   justify-content: center;
   border-bottom-left-radius: 2rem;
   border-bottom-right-radius: 2rem;
+  overflow-y: auto;
+  overflow-x: auto;
 }
 
 .export-polje {
   display: flex;
+  overflow-y: auto;
+  overflow-x: auto;
   flex-direction: column;
   height: 80%;
   width: 40%;
