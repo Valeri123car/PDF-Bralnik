@@ -4,15 +4,18 @@ import './App.css'
 import Forms from './components/Forms'
 import Export from './components/Export'
 import Header from './components/Header'
+import { PdfProvider } from "./components/PdfContext"; 
+
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
       <Header></Header>
-      <DragAndDrop></DragAndDrop>
-      <Forms></Forms>
+      <PdfProvider>
+        <DragAndDrop></DragAndDrop>
+        <Forms></Forms>
+      </PdfProvider>
       <Export></Export>
     </>
   )

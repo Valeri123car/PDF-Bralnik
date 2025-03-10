@@ -1,8 +1,10 @@
 import { useDropzone } from "react-dropzone";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import * as pdfjs from "pdfjs-dist/build/pdf";
 import "pdfjs-dist/build/pdf.worker";
 import "./components.css";
+import { usePdf } from "./PdfContext";
+import { useState } from "react";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.js",
@@ -10,12 +12,12 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 function DragAndDrop() {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [extractedText, setExtractedText] = useState("");
+  const { setExtractedText } = usePdf();
+  const [fileName, setFileName] = useState("");
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
-    setSelectedFile(file);
+    setFileName(file.name); 
     extractTextFromPDF(file);
   }, []);
 
@@ -39,13 +41,14 @@ function DragAndDrop() {
           const content = await page.getTextContent();
           text += content.items.map((item) => item.str).join(" ") + "\n";
         }
+        console.log(text);
 
-        setExtractedText(text || "ni bilo najdenega nobenga texta.");
+        setExtractedText(text || "Ni bilo najdenega nobenega teksta.");
       } catch (error) {
-        console.error("prislo je do napake:", error);
-        setExtractedText("Failed to extract text from this PDF.");
+        console.error("Prišlo je do napake:", error);
+        setExtractedText("Napaka pri branju PDF.");
       }
-    };console.log(extractedText)
+    };
   };
 
   return (
@@ -55,14 +58,10 @@ function DragAndDrop() {
         {isDragActive ? (
           <p>Spustite datoteko tukaj...</p>
         ) : (
-          <p>Povlecite in spustite datoteko tukaj ali kliknite spodnji gumb</p>
+          <p>Povlecite in spustite datoteko tukaj ali kliknite spodnji gumb.</p>
         )}
         <button>Izberite datoteko</button>
-        {selectedFile && (
-          <div className="selectedFiles">
-            <p>Izbrana datoteka: {selectedFile.name}</p>
-          </div>
-        )}
+        {fileName && <p>Izbrana datoteka: {fileName}</p>}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import gzdc from "./gzdc.jpg"
+import gzdc from "./gzdcc.png"
 import "./components.css"
 
 function Header(){
