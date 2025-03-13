@@ -33,6 +33,7 @@ p {
   border-top-left-radius: 2rem;
   border-top-right-radius: 2rem;
   border-bottom: 2px solid;
+  flex-direction: column;
 }
 
 .dragNDropPolje {
@@ -47,6 +48,7 @@ p {
   justify-content: center;
   overflow: hidden;
   overflow-y: auto;
+  margin-bottom: 0.3vw;
 }
 
 .dragNDropPolje:hover {

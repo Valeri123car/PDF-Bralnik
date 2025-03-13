@@ -1,10 +1,8 @@
 import { useDropzone } from "react-dropzone";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import * as pdfjs from "pdfjs-dist/build/pdf";
 import "pdfjs-dist/build/pdf.worker";
-import "./components.css";
 import { usePdf } from "./PdfContext";
-import { useState } from "react";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.js",
@@ -12,19 +10,23 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 function DragAndDrop() {
-  const { setExtractedText } = usePdf();
-  const [fileName, setFileName] = useState("");
+  const { setExtractedText, setExtractingData } = usePdf();
+  const [fileNames, setFileNames] = useState([]);
+  const [processing, setProcessing] = useState(false); 
 
   const onDrop = useCallback((acceptedFiles) => {
-    const file = acceptedFiles[0];
-    setFileName(file.name); 
-    extractTextFromPDF(file);
+    const files = acceptedFiles;
+    setFileNames((prevFileNames) => [
+      ...prevFileNames,
+      ...files.map((file) => file.name),
+    ]);
+    files.forEach(file => extractTextFromPDF(file));
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { "application/pdf": [] },
-    multiple: false,
+    multiple: true, 
   });
 
   const extractTextFromPDF = async (file) => {
@@ -51,6 +53,13 @@ function DragAndDrop() {
     };
   };
 
+  const handleProcessData = () => {
+    setProcessing(true); 
+    setExtractingData(true);
+    console.log("uspešno obdelani podatki za:")
+    console.log(fileNames.length)
+  };
+
   return (
     <div className="dragAndDrop">
       <div {...getRootProps()} className="dragNDropPolje">
@@ -61,8 +70,14 @@ function DragAndDrop() {
           <p>Povlecite in spustite datoteko tukaj ali kliknite spodnji gumb.</p>
         )}
         <button>Izberite datoteko</button>
-        {fileName && <p>Izbrana datoteka: {fileName}</p>}
+        {fileNames.length > 0 &&
+          fileNames.map((name, index) => (
+            <p key={index}>Izbrana datoteka: {name}</p>
+          ))}
       </div>
+      <button onClick={handleProcessData}>
+        Obdelaj podatke
+      </button>
     </div>
   );
 }

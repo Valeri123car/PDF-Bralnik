@@ -3,8 +3,8 @@ import { usePdf } from "./PdfContext";
 import PopUp from "./Popout";
 
 function Forms() {
-  const { extractedText } = usePdf();
-
+  const { extractedText, extractingData } = usePdf();
+  
   const [geoPisarna, setGeoPisarna] = useState("");
   const [stevilka, setStevilka] = useState("");
   const [ko, setKo] = useState("");
@@ -15,14 +15,12 @@ function Forms() {
   const [vodjaPostopka, setVodjaPostopka] = useState("");
   const [ugotovitevUprave, setUgotovitevUprave] = useState("");
   const [isPopUpVisible, setIsPopUpVisible] = useState(false); 
-
+  const [popUpText, setPopUpText] = useState(""); 
 
   useEffect(() => {
-    if (extractedText) {
+    if (extractedText && extractingData) {
       const geoPisarnaMatch = extractedText.match(/Geodetska\s*pisarna\s*([\p{L}\s-]+?)(?=\s{2,}|$)/u);
       if (geoPisarnaMatch) setGeoPisarna(geoPisarnaMatch[1].trim());
-
-      if (geoPisarnaMatch) setGeoPisarna(geoPisarnaMatch[1]);
 
       const stevilkaMatch = extractedText.match(/Številka:\s*([\d\-\/]+)/);
       if (stevilkaMatch) setStevilka(stevilkaMatch[1]);
@@ -37,11 +35,9 @@ function Forms() {
       if (tehPosMatch) setStTehPos(tehPosMatch[1]);
       
       const piMatch = extractedText.match(/pooblaščeni\s*geodet\s*([a-zA-ZÀ-ž\s,\.]+?\([\w\d]+\))/i);
-      console.log(extractedText.match(/pooblaščeni\s*geodet\s*([a-zA-ZÀ-ž\s,\.]+?\([\w\d]+\))/i));
       if (piMatch) setPi(piMatch[1]);
-      
 
-      const dopolnitiDoMatch = extractedText.match(/do\s*(\d{2}\.\d{2}\.\d{4})/); //TULE ŠE MOREM DODAT ČE NI DATUM AMPAK SAMO BESEDA 10 DNI
+      const dopolnitiDoMatch = extractedText.match(/do\s*(\d{2}\.\d{2}\.\d{4})/);
       if (dopolnitiDoMatch) setDopolnitiDo(dopolnitiDoMatch[1]);
 
       const vodjaMatch = extractedText.match(/Postopek\s*vodi:\s*([a-zA-ZÀ-ž\s]+?)\s{2,}/i);
@@ -56,9 +52,8 @@ function Forms() {
         
         setUgotovitevUprave(cleanedUgotovitevUprave);
       }
-
     }
-  }, [extractedText]);
+  }, [extractedText, extractingData]);
 
   const handleInputChange = (setter) => (event) => {
     setter(event.target.value);
@@ -66,7 +61,10 @@ function Forms() {
 
   const togglePopUp = () => {
     setIsPopUpVisible(!isPopUpVisible);
-};
+    if (!isPopUpVisible) {
+      setPopUpText(ugotovitevUprave || "No data found.");
+    }
+  };
 
   return (
     <div className="forms">
@@ -98,7 +96,7 @@ function Forms() {
         <input 
           type="text" 
           value={stevilkaElaborata} 
-          placeholder="Številka elaborata" 
+          placeholder="Elaborat" 
           onChange={handleInputChange(setStevilkaElaborata)} 
         />
       </div>
@@ -107,14 +105,14 @@ function Forms() {
         <input 
           type="text" 
           value={stTehPos} 
-          placeholder="Št. tehničnega postopka" 
+          placeholder="Tehnični postopek" 
           onChange={handleInputChange(setStTehPos)} 
         />
-        <label>P.I.:</label>
+        <label>Pooblaščeni geodet:</label>
         <input 
           type="text" 
           value={pi} 
-          placeholder="P.I." 
+          placeholder="Pooblaščeni geodet" 
           onChange={handleInputChange(setPi)} 
         />
       </div>
@@ -136,9 +134,10 @@ function Forms() {
       </div>
       <div className="forms-box">
         <label>Ugotovitev uprave:</label>
-        <button className="popUpButton" onClick={togglePopUp}>Preglej ugotovitve</button>
-        {isPopUpVisible && <PopUp text={ugotovitevUprave} onClose={togglePopUp} />}
+        <button onClick={togglePopUp}>Prikaži ugotovitve</button>
       </div>
+
+      {isPopUpVisible && <PopUp text={popUpText} onClose={togglePopUp} />}
     </div>
   );
 }
