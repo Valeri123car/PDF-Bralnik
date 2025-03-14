@@ -1,7 +1,7 @@
 import { usePdf } from './PdfContext';
 import * as XLSX from 'xlsx';
 import { useState } from 'react';
-import { dirname, join } from 'path'; // Uvozimo path modul
+/*import { dirname, join } from 'path'; // Uvozimo path modul
 
 function Export() {
   const { geoPisarna, stevilka, ko, stevilkaElaborata, stTehPos, pi, dopolnitiDo, vodjaPostopka } = usePdf();
@@ -142,4 +142,4 @@ function Export() {
   );
 }
 
-export default Export;
+export default Export;*/
