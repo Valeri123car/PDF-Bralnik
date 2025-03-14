@@ -6,77 +6,72 @@ function Export() {
   const { geoPisarna, stevilka, ko, stevilkaElaborata, stTehPos, pi, dopolnitiDo, vodjaPostopka } = usePdf();
 
   const [file, setFile] = useState(null);
-  const [fileName, setFileName] = useState("");
-  const [workbook, setWorkbook] = useState(null); // To store the loaded workbook
+  const [fileName, setFileName] = useState("Zbirka_struktura.xlsx"); // Fixed file name
+
+    
 
   const handleFileUpload = (event) => {
     const uploadedFile = event.target.files[0];
     if (uploadedFile) {
       setFile(uploadedFile);
-      setFileName(uploadedFile.name);
-
-      // Read the file and store the workbook
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const wb = XLSX.read(data, { type: "array" });
-        setWorkbook(wb); // Store the workbook in state
-      };
-      reader.readAsArrayBuffer(uploadedFile);
+      setFileName(uploadedFile.name); // Or just keep it fixed as above.
     }
   };
 
   const handleDeleteFile = () => {
     setFile(null);
     setFileName("");
-    setWorkbook(null); // Clear the workbook
   };
 
   const exportToExcel = async () => {
-    if (!file || !workbook) {
+    if (!file) {
       alert("Najprej naložite Excel datoteko.");
       return;
     }
 
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
 
-    let jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-    if (jsonData.length === 0) {
-      jsonData.push(["Zap. št", "Geodetska pisarna", "Številka", "K.O", "Št. elaborata", "Št. tehničnega postopka", "P.I", "Dopolniti do", "Vodja postopka"]);
-    }
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      let jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-    // Add the new row of data
-    const zaporednaStevilka = jsonData.length;
-    const newRow = [
-      zaporednaStevilka,
-      geoPisarna || "",
-      stevilka || "",
-      ko || "",
-      stevilkaElaborata || "",
-      stTehPos || "",
-      pi || "",
-      dopolnitiDo || "",
-      vodjaPostopka || ""
-    ];
+      if (jsonData.length === 0) {
+        jsonData.push(["Zap. št", "Geodetska pisarna", "Številka", "K.O", "Št. elaborata", "Št. tehničnega postopka", "P.I", "Dopolniti do", "Vodja postopka"]);
+      }
 
-    jsonData.push(newRow);
+      const zaporednaStevilka = jsonData.length;
+      const newRow = [
+        zaporednaStevilka,
+        geoPisarna || "", 
+        stevilka || "",
+        ko || "",
+        stevilkaElaborata || "",
+        stTehPos || "",
+        pi || "",
+        dopolnitiDo || "",
+        vodjaPostopka || ""
+      ];
 
-    // Convert back to worksheet and update the workbook
-    const updatedWorksheet = XLSX.utils.aoa_to_sheet(jsonData);
-    workbook.Sheets[sheetName] = updatedWorksheet;
+      jsonData.push(newRow);
 
-    // Create a Blob with the updated data
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+      const updatedWorksheet = XLSX.utils.aoa_to_sheet(jsonData);
+      workbook.Sheets[sheetName] = updatedWorksheet;
 
-    // Create a download link and trigger the download to the same file name
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = fileName || "exported-data.xlsx";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName || "Zbirka_struktura.xlsx"; // Always save with a fixed name
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    reader.readAsArrayBuffer(file);
   };
 
   return (
