@@ -9,10 +9,10 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).toString();
 
-function DragAndDrop() {
-  const { setExtractedText, setExtractingData } = usePdf();
+function DragAndDrop({ setNumForms }) {
+  const { setPdfFiles, setExtractedText, setExtractingData } = usePdf();
   const [fileNames, setFileNames] = useState([]);
-  const [processing, setProcessing] = useState(false); 
+  const [processing, setProcessing] = useState(false);
 
   const onDrop = useCallback((acceptedFiles) => {
     const files = acceptedFiles;
@@ -20,13 +20,18 @@ function DragAndDrop() {
       ...prevFileNames,
       ...files.map((file) => file.name),
     ]);
-    files.forEach(file => extractTextFromPDF(file));
-  }, []);
+    
+    setPdfFiles(files);
+
+    setNumForms(files.length);
+
+    files.forEach((file) => extractTextFromPDF(file));
+  }, [setPdfFiles, setNumForms]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { "application/pdf": [] },
-    multiple: true, 
+    multiple: true,
   });
 
   const extractTextFromPDF = async (file) => {
@@ -45,19 +50,26 @@ function DragAndDrop() {
         }
         console.log(text);
 
-        setExtractedText(text || "Ni bilo najdenega nobenega teksta.");
+        setExtractedText(text || "ni blo najdenega teksta");
       } catch (error) {
-        console.error("Prišlo je do napake:", error);
-        setExtractedText("Napaka pri branju PDF.");
+        console.error("prišlo je do napake:", error);
+        setExtractedText("napaka pri branju pdf datoteke");
       }
     };
   };
 
   const handleProcessData = () => {
-    setProcessing(true); 
+    setProcessing(true);
     setExtractingData(true);
-    console.log("uspešno obdelani podatki za:")
-    console.log(fileNames.length)
+    console.log("uspešno obdelani podatki za:", fileNames);
+    console.log(fileNames.length);
+  };
+
+  const odstraniDatoteke = () => {
+    setFileNames([]);
+    setExtractedText();
+    setExtractingData();
+    setProcessing();
   };
 
   return (
@@ -75,9 +87,14 @@ function DragAndDrop() {
             <p key={index}>Izbrana datoteka: {name}</p>
           ))}
       </div>
-      <button onClick={handleProcessData}>
-        Obdelaj podatke
-      </button>
+      <div className="drag-and-drop-buttons">
+        <button onClick={handleProcessData} className="obdelaj-podatke-button">
+          Obdelaj podatke
+        </button>
+        <button onClick={odstraniDatoteke} className="odstrani-datoteko-button">
+          Odstrani datoteko
+        </button>
+      </div>
     </div>
   );
 }

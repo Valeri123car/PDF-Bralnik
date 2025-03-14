@@ -3,19 +3,22 @@ import { usePdf } from "./PdfContext";
 import PopUp from "./Popout";
 
 function Forms() {
-  const { extractedText, extractingData } = usePdf();
-  
-  const [geoPisarna, setGeoPisarna] = useState("");
-  const [stevilka, setStevilka] = useState("");
-  const [ko, setKo] = useState("");
-  const [stevilkaElaborata, setStevilkaElaborata] = useState("");
-  const [stTehPos, setStTehPos] = useState("");
-  const [pi, setPi] = useState("");
-  const [dopolnitiDo, setDopolnitiDo] = useState("");
-  const [vodjaPostopka, setVodjaPostopka] = useState("");
-  const [ugotovitevUprave, setUgotovitevUprave] = useState("");
+  const { extractedText, extractingData, pdfFiles, geoPisarna, stevilka, ko, stevilkaElaborata, stTehPos, pi, dopolnitiDo, vodjaPostopka, setGeoPisarna, setStevilka, setKo, setStevilkaElaborata, setStTehPos, setPi, setDopolnitiDo, setVodjaPostopka, setUgotovitevUprave } = usePdf(); 
+
   const [isPopUpVisible, setIsPopUpVisible] = useState(false); 
   const [popUpText, setPopUpText] = useState(""); 
+
+  const [currentPdfIndex, setCurrentPdfIndex] = useState(0); 
+
+  useEffect(() => {
+    if (pdfFiles && pdfFiles.length > 0) {
+      const interval = setInterval(() => {
+        setCurrentPdfIndex((prevIndex) => (prevIndex + 1) % pdfFiles.length); 
+      }, 5000); 
+
+      return () => clearInterval(interval);
+    }
+  }, [pdfFiles]);
 
   useEffect(() => {
     if (extractedText && extractingData) {
@@ -43,17 +46,17 @@ function Forms() {
       const vodjaMatch = extractedText.match(/Postopek\s*vodi:\s*([a-zA-ZÀ-ž\s]+?)\s{2,}/i);
       if (vodjaMatch) setVodjaPostopka(vodjaMatch[1]);
       
-      const ugotovitevUprave = extractedText.match(/Geodetska\s*uprava\s*je\s*pri\s*preizkusu\s*elaborata\s*ugotovila:[\s\S]+?(?=\s*Odprava|$)/);
+      const ugotovitevUpraveMatch = extractedText.match(/Geodetska\s*uprava\s*je\s*pri\s*preizkusu\s*elaborata\s*ugotovila:[\s\S]+?(?=\s*Odprava|$)/);
 
-      if (ugotovitevUprave) {
-        const cleanedUgotovitevUprave = ugotovitevUprave[0]
+      if (ugotovitevUpraveMatch) {
+        const cleanedUgotovitevUprave = ugotovitevUpraveMatch[0]
           .replace(/Geodetska\s*uprava\s*je\s*pri\s*preizkusu\s*elaborata\s*ugotovila:\s*/, '')
           .replace(/,\s*$/, '');  
         
         setUgotovitevUprave(cleanedUgotovitevUprave);
       }
     }
-  }, [extractedText, extractingData]);
+  }, [extractedText, extractingData, currentPdfIndex]);
 
   const handleInputChange = (setter) => (event) => {
     setter(event.target.value);
@@ -69,6 +72,13 @@ function Forms() {
   return (
     <div className="forms">
       <div className="forms-box">
+        <label>Obdelava PDF:</label>
+        <input 
+          type="text" 
+          value={pdfFiles && pdfFiles.length > 0 ? pdfFiles[currentPdfIndex].name : ""} 
+          placeholder="Obdelan PDF" 
+          readOnly
+        />
         <label>Geodetska pisarna:</label>
         <input 
           type="text" 
@@ -76,6 +86,8 @@ function Forms() {
           placeholder="Geodetska pisarna" 
           onChange={handleInputChange(setGeoPisarna)} 
         />
+      </div>
+      <div className="forms-box">
         <label>Številka:</label>
         <input 
           type="text" 
@@ -83,8 +95,6 @@ function Forms() {
           placeholder="Številka" 
           onChange={handleInputChange(setStevilka)} 
         />
-      </div>
-      <div className="forms-box">
         <label>K.O:</label>
         <input 
           type="text" 
@@ -92,6 +102,8 @@ function Forms() {
           placeholder="K.O" 
           onChange={handleInputChange(setKo)} 
         />
+      </div>
+      <div className="forms-box">
         <label>Številka elaborata:</label>
         <input 
           type="text" 
@@ -99,8 +111,6 @@ function Forms() {
           placeholder="Elaborat" 
           onChange={handleInputChange(setStevilkaElaborata)} 
         />
-      </div>
-      <div className="forms-box">
         <label>Št. tehničnega postopka:</label>
         <input 
           type="text" 
@@ -108,6 +118,8 @@ function Forms() {
           placeholder="Tehnični postopek" 
           onChange={handleInputChange(setStTehPos)} 
         />
+      </div>
+      <div className="forms-box">
         <label>Pooblaščeni geodet:</label>
         <input 
           type="text" 
@@ -115,8 +127,6 @@ function Forms() {
           placeholder="Pooblaščeni geodet" 
           onChange={handleInputChange(setPi)} 
         />
-      </div>
-      <div className="forms-box">
         <label>Dopolniti do:</label>
         <input 
           type="text" 
@@ -124,6 +134,8 @@ function Forms() {
           placeholder="Dopolniti do" 
           onChange={handleInputChange(setDopolnitiDo)} 
         />
+      </div>
+      <div className="forms-box">
         <label>Vodja postopka:</label>
         <input 
           type="text" 
@@ -131,8 +143,6 @@ function Forms() {
           placeholder="Vodja postopka" 
           onChange={handleInputChange(setVodjaPostopka)} 
         />
-      </div>
-      <div className="forms-box">
         <label>Ugotovitev uprave:</label>
         <button onClick={togglePopUp}>Prikaži ugotovitve</button>
       </div>

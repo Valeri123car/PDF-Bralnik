@@ -41,7 +41,7 @@ p {
   flex-direction: column;
   background-color: rgb(98, 98, 98);
   height: 80%;
-  width: 40%;
+  width: 40wv;
   border-style: dashed;
   border-width: 2px;
   align-items: center;
@@ -57,6 +57,23 @@ p {
   transition: 0.5;
 }
 
+.drag-and-drop-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  width: 40vw;
+}
+
+.obdelaj-podatke-button {
+  background-color: rgb(88, 169, 88);
+  border-radius: 5px;
+}
+
+.odstrani-datoteko-button {
+  background-color: rgb(252, 47, 47);
+  border-radius: 5px;
+}
+
 /*FORMS*/
 
 .forms {
@@ -66,7 +83,7 @@ p {
   height: 12vw;
   background-color: rgb(98, 98, 98);
   justify-content: space-evenly;
-  border-bottom: 2px solid;
+  overflow: hidden;
 }
 
 .forms-box {
@@ -80,6 +97,10 @@ p {
   width: 12%;
   overflow-y: auto;
   overflow-x: auto;
+  /*scrollbar-width: none;*/
+}
+
+.forms-box:-webkit-scrollbar {
 }
 
 .forms-box-inside {
@@ -142,6 +163,7 @@ p {
   border-bottom-right-radius: 2rem;
   overflow-y: auto;
   overflow-x: auto;
+  border-top: 2px solid;
 }
 
 .export-polje {

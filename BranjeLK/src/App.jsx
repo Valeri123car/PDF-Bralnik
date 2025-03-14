@@ -1,24 +1,27 @@
-import { useState } from 'react'
-import DragAndDrop from './components/DragAndDrop'
-import './App.css'
-import Forms from './components/Forms'
-import Export from './components/Export'
-import Header from './components/Header'
-import { PdfProvider } from "./components/PdfContext"; 
+import { useState } from 'react';
+import DragAndDrop from './components/DragAndDrop';
+import './App.css';
+import Forms from './components/Forms';
+import Export from './components/Export';
 
+import Header from './components/Header';
+import { PdfProvider } from "./components/PdfContext";
 
 function App() {
+  const [numForms, setNumForms] = useState(1);
 
   return (
     <>
-      <Header></Header>
+      <Header />
       <PdfProvider>
-        <DragAndDrop></DragAndDrop>
-        <Forms></Forms>
+        <DragAndDrop setNumForms={setNumForms} /> 
+        {[...Array(numForms)].map((_, index) => (
+          <Forms key={index} />
+        ))}
+        <Export />
       </PdfProvider>
-      <Export></Export>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
