@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electron", {
-  showSaveDialog: (excelBuffer) =>
-    ipcRenderer.invoke("show-save-dialog", excelBuffer),
+  saveFile: (data) => ipcRenderer.send("save-file", data),
+  onFileSaved: (callback) => ipcRenderer.on("file-saved", callback),
 });
