@@ -4,7 +4,7 @@ const PdfContext = createContext();
 
 export const PdfProvider = ({ children }) => {
   const [pdfFiles, setPdfFiles] = useState([]);
-  const [extractedText, setExtractedText] = useState('');
+  const [extractedTexts, setExtractedTexts] = useState([]); // Store an array of extracted texts
   const [extractingData, setExtractingData] = useState(false);
   const [geoPisarna, setGeoPisarna] = useState('');
   const [stevilka, setStevilka] = useState('');
@@ -19,7 +19,7 @@ export const PdfProvider = ({ children }) => {
   return (
     <PdfContext.Provider value={{
       pdfFiles, setPdfFiles,
-      extractedText, setExtractedText,
+      extractedTexts, setExtractedTexts, // Provide extractedTexts as an array
       extractingData, setExtractingData,
       geoPisarna, setGeoPisarna,
       stevilka, setStevilka,

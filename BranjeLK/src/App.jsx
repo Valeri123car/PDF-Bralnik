@@ -16,7 +16,7 @@ function App() {
       <PdfProvider>
         <DragAndDrop setNumForms={setNumForms} /> 
         {[...Array(numForms)].map((_, index) => (
-          <Forms key={index} />
+          <Forms key={index} index={index} />
         ))}
         {/*<Export />*/}
       </PdfProvider>
