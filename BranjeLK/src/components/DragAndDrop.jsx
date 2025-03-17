@@ -13,7 +13,7 @@ function DragAndDrop({ setNumForms }) {
   const [fileNames, setFileNames] = useState([]);
   const [processing, setProcessing] = useState(false);
 
-  const hardCodedFolderPath = "C:/Users/valer/OneDrive - Univerza v Mariboru/Namizje/pdf-doc";
+  const hardCodedFolderPath = "C:/Users/USER/Desktop/GZD-Celje/PDF-Bralnik/BranjeLK/pdf-doc";
 
   const handleSelectHardCodedFolder = async () => {
     const fs = window.require("fs");
