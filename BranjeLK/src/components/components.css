@@ -7,7 +7,7 @@ p {
   margin: 0;
 }
 
-.button {
+button {
   outline: none;
 }
 
@@ -63,20 +63,32 @@ p {
 
 .select-folder-button {
   display: flex;
-  flex-direction: row;
-  width: 20vw;
+  flex-direction: column;
+  width: auto;
   justify-content: center;
+  height: auto;
 }
 .select-folder {
   display: flex;
-  width: 100vw;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.process-data-button {
+  width: 48%;
+}
+
+.remove-file-button {
+  width: 48%;
 }
 
 .drag-and-drop-buttons {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  width: 20vw;
+  width: 11.5vw;
 }
 
 .obdelaj-podatke-button {

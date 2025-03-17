@@ -13,7 +13,7 @@ function DragAndDrop({ setNumForms }) {
   const [fileNames, setFileNames] = useState([]);
   const [processing, setProcessing] = useState(false);
 
-  const hardCodedFolderPath = "C:/Users/USER/Desktop/GZD-Celje/PDF-Bralnik/BranjeLK/pdf-doc";
+  const hardCodedFolderPath = "C:/Users/valer/OneDrive - Univerza v Mariboru/Namizje/GZ-Celje/BranjeLK/PDF-bralnik/BranjeLK/pdf-doc";
 
   const handleSelectHardCodedFolder = async () => {
     const fs = window.require("fs");
@@ -80,7 +80,7 @@ function DragAndDrop({ setNumForms }) {
   return (
     <div className="dragAndDrop">
       <div className="select-folder-button">
-        <button onClick={handleSelectHardCodedFolder}>Select Folder (Hard-coded)</button>
+        <button className="select-folder" onClick={handleSelectHardCodedFolder}>Select Folder (Hard-coded)</button>
         {fileNames.length > 0 &&
           fileNames.map((name, index) => (
             <p key={index}>Selected file: {name}</p>
