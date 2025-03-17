@@ -38,6 +38,8 @@
   },
   "dependencies": {
     "pdfjs-dist": "^4.10.38",
+    "react-modal": "^3.16.3",
+    "react-pdf": "^9.2.1",
     "xlsx": "^0.18.5"
   }
 }

@@ -40,19 +40,22 @@ function Forms({ index = 0 }) {
   
       const stevilkaMatch = currentPdfText.match(/Številka:\s*([\d\-\/]+)/);
       if (stevilkaMatch) newFormState.stevilka = stevilkaMatch[1];
-  
-      const koMatch = currentPdfText.match(/Katastrska\s*občina:\s*(\d+\s*[A-Za-zÀ-ž\s-]+)(?=\s*Datum|$)/);
-      if (koMatch) newFormState.ko = koMatch[1];
-  
+
+      const koMatch = currentPdfText.match(/Katastrska\s*občina:\s*((\d+\s*[A-Za-zÀ-ž\s-]+)(?:\s*,\s*\d+\s*[A-Za-zÀ-ž\s-]+|\s+\d+\s*[A-Za-zÀ-ž\s-]+)*)(?=\s*Datum|$)/);
+      if (koMatch) {
+        newFormState.ko = koMatch[1].trim();
+        console.log("Extracted K.O:", newFormState.ko);
+      }
+      
       const elaboratMatch = currentPdfText.match(/elaborat\s*številka\s*(\d+)/i);
       if (elaboratMatch) newFormState.stevilkaElaborata = elaboratMatch[1];
   
       const tehPosMatch = currentPdfText.match(/tehničnem\s*postopku\s*številka\s*(\d+)/i);
       if (tehPosMatch) newFormState.stTehPos = tehPosMatch[1];
-  
-      const piMatch = currentPdfText.match(/pooblaščeni\s*geodet\s*([a-zA-ZÀ-ž\s,\.]+?\([\w\d]+\))/i);
+
+      const piMatch = currentPdfText.match(/pooblaščen[ai]\s*geodet(?:inja)?\s*([a-zA-ZÀ-ž\s,\.]+?\([\w\d]+\))/i);
       if (piMatch) newFormState.pi = piMatch[1];
-  
+
       const documentDateMatch = currentPdfText.match(/Datum:\s*(\d{2}\.\d{2}\.\d{4})/);
       let baseDate = new Date(); 
 
@@ -60,29 +63,43 @@ function Forms({ index = 0 }) {
         const [day, month, year] = documentDateMatch[1].split('.').map(part => parseInt(part, 10));
         baseDate = new Date(year, month - 1, day); 
       }
+      // Try to find any date that follows "najkasneje do"
+let dopolnitiDoMatch = currentPdfText.match(/najkasneje\s*do\s*(\d{1,2}[\.\-\/]\d{1,2}[\.\-\/]\d{2,4})/i);
 
-      const dopolnitiDoMatch = 
-        currentPdfText.match(/do\s*(\d{2}\.\d{2}\.\d{4})/) || 
-        currentPdfText.match(/najkasneje\s*v\s*(\d+)ih\s*dneh\s*od\s*prejema/i);
+// If that doesn't work, look for "X days from receipt" pattern
+if (!dopolnitiDoMatch) {
+  dopolnitiDoMatch = currentPdfText.match(/najkasneje\s*v\s*(\d+)(?:ih)?\s*dneh\s*od\s*prejema/i);
+}
 
-      if (dopolnitiDoMatch) {
-        if (dopolnitiDoMatch[1] && dopolnitiDoMatch[1].includes('.')) {
-          newFormState.dopolnitiDo = dopolnitiDoMatch[1];
-        } else if (dopolnitiDoMatch[1]) {
-          const days = parseInt(dopolnitiDoMatch[1], 10);
-          const targetDate = new Date(baseDate);
-          targetDate.setDate(baseDate.getDate() + days);
-          
-          const formattedDate = `${String(targetDate.getDate()).padStart(2, '0')}.${String(targetDate.getMonth() + 1).padStart(2, '0')}.${targetDate.getFullYear()}`;
-          newFormState.dopolnitiDo = formattedDate;
-        }
-      }
+// If still no match, try a more general search for dates in the context of deadlines
+if (!dopolnitiDoMatch) {
+  dopolnitiDoMatch = currentPdfText.match(/(?:dopolni|najkasneje)(?:.*?)(\d{1,2}[\.\-\/]\d{1,2}[\.\-\/]\d{2,4})/i);
+}
+
+if (dopolnitiDoMatch) {
+  if (dopolnitiDoMatch[1] && /\d{1,2}[\.\-\/]\d{1,2}[\.\-\/]\d{2,4}/.test(dopolnitiDoMatch[1])) {
+    // Format might be different, let's standardize it
+    let dateParts = dopolnitiDoMatch[1].split(/[\.\-\/]/);
+    if (dateParts.length === 3) {
+      newFormState.dopolnitiDo = `${dateParts[0]}.${dateParts[1]}.${dateParts[2]}`;
+    } else {
+      newFormState.dopolnitiDo = dopolnitiDoMatch[1];
+    }
+  } else if (dopolnitiDoMatch[1]) {
+    // Handle the "X days from receipt" case
+    const days = parseInt(dopolnitiDoMatch[1], 10);
+    const targetDate = new Date(baseDate);
+    targetDate.setDate(baseDate.getDate() + days);
     
-      const vodjaMatch = currentPdfText.match(/Postopek\s*vodi:\s*([a-zA-ZÀ-ž\s]+?)(?=\s+višja|\s+svetovalka|\s{2,}|$)/i);
+    const formattedDate = `${String(targetDate.getDate()).padStart(2, '0')}.${String(targetDate.getMonth() + 1).padStart(2, '0')}.${targetDate.getFullYear()}`;
+    newFormState.dopolnitiDo = formattedDate;
+  }
+}
+      const vodjaMatch = currentPdfText.match(/(?:[Pp]ostopek|ostopek)\s*vodi:?\s*([a-zA-ZÀ-ž\s\.]+?)(?=\s+(?:univ|višj|svetoval|Višj|Elektronski|Vročiti:|$))/i);
       if (vodjaMatch) {
         newFormState.vodjaPostopka = vodjaMatch[1].trim();
       }
-    
+      
       const ugotovitevUpraveMatch = 
         currentPdfText.match(/Geodetska\s*uprava\s*je\s*pri\s*preizkusu\s*elaborata\s*ugotovila[,:]\s*([\s\S]+?)(?=Odprava\s*zgoraj|$)/i);
 
@@ -98,12 +115,22 @@ function Forms({ index = 0 }) {
   const handleInputChange = (field) => (event) => {
     const updatedValue = event.target.value;
     
-    setFormState(prev => {
-      const updated = {...prev, [field]: updatedValue};
-      
-      updateFormData(index, {[field]: updatedValue});
+    if (field === 'ko') {
+      const formattedKo = updatedValue.split(',').map(item => item.trim()).join(', ');
+      console.log("Updated K.O value:", formattedKo);
+      setFormState(prev => {
+      const updated = {...prev, ko: koMatch[1].trim()};
+      updateFormData(index, {ko: koMatch[1].trim()});
       return updated;
-    });
+  });
+
+    } else {
+      setFormState(prev => {
+        const updated = {...prev, [field]: updatedValue};
+        updateFormData(index, {[field]: updatedValue});
+        return updated;
+      });
+    }
   };
 
   const togglePopUp = () => {

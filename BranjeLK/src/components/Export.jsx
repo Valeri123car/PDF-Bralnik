@@ -65,7 +65,7 @@ function Export() {
             lastSequentialNumber + 1,
             form.geoPisarna || "",
             form.stevilka || "",
-            form.ko || "",
+            form.ko ? form.ko.split(",").join(", ") : "", // Handle multiple Katastrska občina values
             form.stevilkaElaborata || "",
             form.stTehPos || "",
             form.pi || "",
