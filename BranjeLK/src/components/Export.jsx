@@ -1,7 +1,6 @@
 import { usePdf } from './PdfContext';
 import * as XLSX from 'xlsx';
-import { useState } from 'react';
-/*import { dirname, join } from 'path'; // Uvozimo path modul
+import { useState, useEffect } from 'react';
 
 function Export() {
   const { geoPisarna, stevilka, ko, stevilkaElaborata, stTehPos, pi, dopolnitiDo, vodjaPostopka } = usePdf();
@@ -14,8 +13,30 @@ function Export() {
   const [successMessage, setSuccessMessage] = useState("");
 
   const isElectron = () => {
+    console.log("Checking if electron is available:", !!window.electron);
     return window.electron !== undefined;
   };
+
+  // Set up listener for file saved events
+  useEffect(() => {
+    if (isElectron()) {
+      // Function to handle file saved event
+      const handleFileSaved = (event, result) => {
+        if (result.success) {
+          setSuccessMessage("Podatki so bili uspešno shranjeni v obstoječo datoteko.");
+        } else {
+          setError(`Napaka pri shranjevanju: ${result.error}`);
+        }
+      };
+
+      // Add the listener
+      if (window.electron && window.electron.onFileSaved) {
+        window.electron.onFileSaved(handleFileSaved);
+      }
+
+      // Clean up function not needed since onFileSaved doesn't return a cleanup method
+    }
+  }, []);
 
   const handleFileUpload = (event) => {
     const uploadedFile = event.target.files[0];
@@ -87,12 +108,15 @@ function Export() {
 
       if (isElectron()) {
         try {
-          if (window.electron) {
-            const directory = dirname(file.path);
-            const filePath = join(directory, fileName);
-            await window.electron.writeFile(filePath, excelBuffer);
-            setSuccessMessage("Podatki so bili uspešno shranjeni v obstoječo datoteko.");
-          }
+          // Send the file data to be saved using the API defined in preload.js
+          const fileData = {
+            buffer: Array.from(excelBuffer),  // Convert to regular array for IPC
+            name: fileName,
+            originalPath: file.path
+          };
+          
+          window.electron.saveFile(fileData);
+          // The response will be handled by the useEffect listener
         } catch (err) {
           console.error("Napaka pri shranjevanju v Electron:", err);
           setError(`Napaka pri shranjevanju: ${err.message}`);
@@ -142,4 +166,4 @@ function Export() {
   );
 }
 
-export default Export;*/
+export default Export;

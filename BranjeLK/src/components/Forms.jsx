@@ -85,24 +85,13 @@ if (dopolnitiDoMatch) {
   
       // Combined regex for ugotovitev uprave
       const ugotovitevUpraveMatch = 
-        currentPdfText.match(/Geodetska\s*uprava\s*je\s*pri\s*preizkusu\s*elaborata\s*ugotovila:[\s\S]+?(?=\s*Odprava|$)/) || 
-        currentPdfText.match(/Geodetska\s*uprava\s*(je\s*pri\s*preizkusu\s*elaborata\s*ugotovila|je.*?ugotovila):\s*(.*?)(?=Odprava\s*zgoraj|$)/is);
-  
-      if (ugotovitevUpraveMatch) {
-        let cleanedUgotovitevUprave;
-        
-        if (ugotovitevUpraveMatch[2]) {
-          // New pattern matched (has group 2)
-          cleanedUgotovitevUprave = ugotovitevUpraveMatch[2].trim();
-        } else {
-          // Original pattern matched
-          cleanedUgotovitevUprave = ugotovitevUpraveMatch[0]
-            .replace(/Geodetska\s*uprava\s*je\s*pri\s*preizkusu\s*elaborata\s*ugotovila:\s*/, '')
-            .replace(/,\s*$/, '');
-        }
-        
-        setUgotovitevUprave(cleanedUgotovitevUprave);
-      }
+  currentPdfText.match(/Geodetska\s*uprava\s*je\s*pri\s*preizkusu\s*elaborata\s*ugotovila[,:]\s*([\s\S]+?)(?=Odprava\s*zgoraj|$)/i);
+
+if (ugotovitevUpraveMatch) {
+  // Extract the content after "ugotovila:" and before "Odprava zgoraj"
+  const cleanedUgotovitevUprave = ugotovitevUpraveMatch[1].trim();
+  setUgotovitevUprave(cleanedUgotovitevUprave);
+}
     }
   }, [extractedTexts, extractingData, index]);
   
