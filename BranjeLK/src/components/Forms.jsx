@@ -3,185 +3,220 @@ import { usePdf } from "./PdfContext";
 import PopUp from "./Popout";
 
 function Forms({ index = 0 }) {
-  const pdfContext = usePdf();
-  const { extractedTexts, extractingData, pdfFiles } = usePdf();
+  const { extractedTexts, extractingData, pdfFiles, formData, updateFormData } = usePdf();
   
   const [isPopUpVisible, setIsPopUpVisible] = useState(false);
   const [popUpText, setPopUpText] = useState("");
   
-  // Local state for this specific form
-  const [geoPisarna, setGeoPisarna] = useState('');
-  const [stevilka, setStevilka] = useState('');
-  const [ko, setKo] = useState('');
-  const [stevilkaElaborata, setStevilkaElaborata] = useState('');
-  const [stTehPos, setStTehPos] = useState('');
-  const [pi, setPi] = useState('');
-  const [dopolnitiDo, setDopolnitiDo] = useState('');
-  const [vodjaPostopka, setVodjaPostopka] = useState('');
-  const [ugotovitevUprave, setUgotovitevUprave] = useState('');
+  const [formState, setFormState] = useState({
+    geoPisarna: '',
+    stevilka: '',
+    ko: '',
+    stevilkaElaborata: '',
+    stTehPos: '',
+    pi: '',
+    dopolnitiDo: '',
+    vodjaPostopka: '',
+    ugotovitevUprave: ''
+  });
 
   useEffect(() => {
-    // Only process if we have extracted texts and this form's index exists in the array
+    if (formData && formData[index]) {
+      setFormState(formData[index]);
+    }
+  }, [formData, index]);
+
+  useEffect(() => {
     if (extractedTexts && extractedTexts.length > index && extractingData) {
       const currentPdfText = extractedTexts[index].text;
       
-      // Combined regex for geodetska pisarna
       const geoPisarnaMatch = 
         currentPdfText.match(/Geodetska\s*pisarna\s*([\p{L}\s-]+?)(?=\s{2,}|$)/u) || 
         currentPdfText.match(/Območna\s*geodetska\s*uprava\s*([A-Za-zÀ-ž\s]+?)(?=\s{2,}|$|\s+T:)/u);
       
-      if (geoPisarnaMatch) setGeoPisarna(geoPisarnaMatch[1].trim());
+      let newFormState = {...formState};
+      
+      if (geoPisarnaMatch) newFormState.geoPisarna = geoPisarnaMatch[1].trim();
   
       const stevilkaMatch = currentPdfText.match(/Številka:\s*([\d\-\/]+)/);
-      if (stevilkaMatch) setStevilka(stevilkaMatch[1]);
+      if (stevilkaMatch) newFormState.stevilka = stevilkaMatch[1];
   
       const koMatch = currentPdfText.match(/Katastrska\s*občina:\s*(\d+\s*[A-Za-zÀ-ž\s-]+)(?=\s*Datum|$)/);
-      if (koMatch) setKo(koMatch[1]);
+      if (koMatch) newFormState.ko = koMatch[1];
   
       const elaboratMatch = currentPdfText.match(/elaborat\s*številka\s*(\d+)/i);
-      if (elaboratMatch) setStevilkaElaborata(elaboratMatch[1]);
+      if (elaboratMatch) newFormState.stevilkaElaborata = elaboratMatch[1];
   
       const tehPosMatch = currentPdfText.match(/tehničnem\s*postopku\s*številka\s*(\d+)/i);
-      if (tehPosMatch) setStTehPos(tehPosMatch[1]);
+      if (tehPosMatch) newFormState.stTehPos = tehPosMatch[1];
   
       const piMatch = currentPdfText.match(/pooblaščeni\s*geodet\s*([a-zA-ZÀ-ž\s,\.]+?\([\w\d]+\))/i);
-      if (piMatch) setPi(piMatch[1]);
+      if (piMatch) newFormState.pi = piMatch[1];
   
-      // Combined regex for dopolniti do
       const documentDateMatch = currentPdfText.match(/Datum:\s*(\d{2}\.\d{2}\.\d{4})/);
-      let baseDate = new Date(); // Default to current date if document date not found
+      let baseDate = new Date(); 
 
       if (documentDateMatch) {
-      // Parse document date (DD.MM.YYYY format)
         const [day, month, year] = documentDateMatch[1].split('.').map(part => parseInt(part, 10));
-        baseDate = new Date(year, month - 1, day); // month is 0-indexed in JavaScript
+        baseDate = new Date(year, month - 1, day); 
       }
 
-// Combined regex for dopolniti do
-const dopolnitiDoMatch = 
-  currentPdfText.match(/do\s*(\d{2}\.\d{2}\.\d{4})/) || 
-  currentPdfText.match(/najkasneje\s*v\s*(\d+)ih\s*dneh\s*od\s*prejema/i);
+      const dopolnitiDoMatch = 
+        currentPdfText.match(/do\s*(\d{2}\.\d{2}\.\d{4})/) || 
+        currentPdfText.match(/najkasneje\s*v\s*(\d+)ih\s*dneh\s*od\s*prejema/i);
 
-if (dopolnitiDoMatch) {
-  if (dopolnitiDoMatch[1] && dopolnitiDoMatch[1].includes('.')) {
-    // If it's already in date format, use it directly
-    setDopolnitiDo(dopolnitiDoMatch[1]);
-  } else if (dopolnitiDoMatch[1]) {
-    // If it's a number of days, calculate the date from the document date
-    const days = parseInt(dopolnitiDoMatch[1], 10);
-    const targetDate = new Date(baseDate);
-    targetDate.setDate(baseDate.getDate() + days);
+      if (dopolnitiDoMatch) {
+        if (dopolnitiDoMatch[1] && dopolnitiDoMatch[1].includes('.')) {
+          newFormState.dopolnitiDo = dopolnitiDoMatch[1];
+        } else if (dopolnitiDoMatch[1]) {
+          const days = parseInt(dopolnitiDoMatch[1], 10);
+          const targetDate = new Date(baseDate);
+          targetDate.setDate(baseDate.getDate() + days);
+          
+          const formattedDate = `${String(targetDate.getDate()).padStart(2, '0')}.${String(targetDate.getMonth() + 1).padStart(2, '0')}.${targetDate.getFullYear()}`;
+          newFormState.dopolnitiDo = formattedDate;
+        }
+      }
     
-    // Format as DD.MM.YYYY
-    const formattedDate = `${String(targetDate.getDate()).padStart(2, '0')}.${String(targetDate.getMonth() + 1).padStart(2, '0')}.${targetDate.getFullYear()}`;
-    setDopolnitiDo(formattedDate);
-  }
-}
-  
       const vodjaMatch = currentPdfText.match(/Postopek\s*vodi:\s*([a-zA-ZÀ-ž\s]+?)(?=\s+višja|\s+svetovalka|\s{2,}|$)/i);
       if (vodjaMatch) {
-        setVodjaPostopka(vodjaMatch[1].trim());
+        newFormState.vodjaPostopka = vodjaMatch[1].trim();
       }
-  
-      // Combined regex for ugotovitev uprave
+    
       const ugotovitevUpraveMatch = 
-  currentPdfText.match(/Geodetska\s*uprava\s*je\s*pri\s*preizkusu\s*elaborata\s*ugotovila[,:]\s*([\s\S]+?)(?=Odprava\s*zgoraj|$)/i);
+        currentPdfText.match(/Geodetska\s*uprava\s*je\s*pri\s*preizkusu\s*elaborata\s*ugotovila[,:]\s*([\s\S]+?)(?=Odprava\s*zgoraj|$)/i);
 
-if (ugotovitevUpraveMatch) {
-  // Extract the content after "ugotovila:" and before "Odprava zgoraj"
-  const cleanedUgotovitevUprave = ugotovitevUpraveMatch[1].trim();
-  setUgotovitevUprave(cleanedUgotovitevUprave);
-}
+      if (ugotovitevUpraveMatch) {
+        const cleanedUgotovitevUprave = ugotovitevUpraveMatch[1].trim();
+        newFormState.ugotovitevUprave = cleanedUgotovitevUprave;
+      }
+      setFormState(newFormState);
+      updateFormData(index, newFormState);
     }
   }, [extractedTexts, extractingData, index]);
   
-  const handleInputChange = (setter) => (event) => {
-    setter(event.target.value);
+  const handleInputChange = (field) => (event) => {
+    const updatedValue = event.target.value;
+    
+    setFormState(prev => {
+      const updated = {...prev, [field]: updatedValue};
+      
+      updateFormData(index, {[field]: updatedValue});
+      return updated;
+    });
   };
 
   const togglePopUp = () => {
     setIsPopUpVisible(!isPopUpVisible);
     if (!isPopUpVisible) {
-      setPopUpText(ugotovitevUprave || "No data found.");
+      setPopUpText(formState.ugotovitevUprave || "No data found.");
     }
   };
+
+  const handleDeleteForm = () => {
+    setFormState({
+      geoPisarna: '',
+      stevilka: '',
+      ko: '',
+      stevilkaElaborata: '',
+      stTehPos: '',
+      pi: '',
+      dopolnitiDo: '',
+      vodjaPostopka: '',
+      ugotovitevUprave: ''
+    });
+
+    updateFormData(index, {
+      geoPisarna: '',
+      stevilka: '',
+      ko: '',
+      stevilkaElaborata: '',
+      stTehPos: '',
+      pi: '',
+      dopolnitiDo: '',
+      vodjaPostopka: '',
+      ugotovitevUprave: ''
+    });
+  };
+
 
   return (
     <div className="forms">
       <div className="forms-header">
         <h3>PDF Form {index + 1}</h3>
-        <p>{pdfFiles && pdfFiles.length > index ? pdfFiles[index].name : "No file"}</p>
+        <p>{pdfFiles && pdfFiles.length > index ? pdfFiles[index].name : "Ni datotek"}</p>
       </div>
       <div className="forms-box">
         <label>Geodetska pisarna:</label>
         <input
           type="text"
-          value={geoPisarna}
+          value={formState.geoPisarna}
           placeholder="Geodetska pisarna"
-          onChange={handleInputChange(setGeoPisarna)}
+          onChange={handleInputChange('geoPisarna')}
         />
       </div>
       <div className="forms-box">
         <label>Številka:</label>
         <input
           type="text"
-          value={stevilka}
+          value={formState.stevilka}
           placeholder="Številka"
-          onChange={handleInputChange(setStevilka)}
+          onChange={handleInputChange('stevilka')}
         />
         <label>K.O:</label>
         <input
           type="text"
-          value={ko}
+          value={formState.ko}
           placeholder="K.O"
-          onChange={handleInputChange(setKo)}
+          onChange={handleInputChange('ko')}
         />
       </div>
       <div className="forms-box">
         <label>Številka elaborata:</label>
         <input
           type="text"
-          value={stevilkaElaborata}
+          value={formState.stevilkaElaborata}
           placeholder="Elaborat"
-          onChange={handleInputChange(setStevilkaElaborata)}
+          onChange={handleInputChange('stevilkaElaborata')}
         />
         <label>Št. tehničnega postopka:</label>
         <input
           type="text"
-          value={stTehPos}
+          value={formState.stTehPos}
           placeholder="Tehnični postopek"
-          onChange={handleInputChange(setStTehPos)}
+          onChange={handleInputChange('stTehPos')}
         />
       </div>
       <div className="forms-box">
         <label>Pooblaščeni geodet:</label>
         <input
           type="text"
-          value={pi}
+          value={formState.pi}
           placeholder="Pooblaščeni geodet"
-          onChange={handleInputChange(setPi)}
+          onChange={handleInputChange('pi')}
         />
         <label>Dopolniti do:</label>
         <input
           type="text"
-          value={dopolnitiDo}
+          value={formState.dopolnitiDo}
           placeholder="Dopolniti do"
-          onChange={handleInputChange(setDopolnitiDo)}
+          onChange={handleInputChange('dopolnitiDo')}
         />
       </div>
       <div className="forms-box">
         <label>Vodja postopka:</label>
         <input
           type="text"
-          value={vodjaPostopka}
+          value={formState.vodjaPostopka}
           placeholder="Vodja postopka"
-          onChange={handleInputChange(setVodjaPostopka)}
+          onChange={handleInputChange('vodjaPostopka')}
         />
         <label>Ugotovitev uprave:</label>
-        <button onClick={togglePopUp}>Prikaži ugotovitve</button>
+        <button onClick={togglePopUp} className="prikazi-ugotovitve button">Prikaži ugotovitve</button>
       </div>
 
       {isPopUpVisible && <PopUp text={popUpText} onClose={togglePopUp} />}
+      <div><button onClick={handleDeleteForm}>Izbriši forme</button></div>
     </div>
   );
 }

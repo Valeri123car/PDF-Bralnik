@@ -27,7 +27,7 @@ function DragAndDrop({ setNumForms }) {
       setPdfFiles(pdfFiles.map(file => ({ path: path.join(hardCodedFolderPath, file), name: file })));
       setNumForms(pdfFiles.length);
     } catch (error) {
-      console.error("Error accessing the folder:", error);
+      console.error("prislo je do napake pri dostopanju datoteke:", error);
     }
   };
 
@@ -63,16 +63,16 @@ function DragAndDrop({ setNumForms }) {
     for (const fileName of fileNames) {
       const filePath = `${hardCodedFolderPath}/${fileName}`;
       const extractedData = await extractTextFromPDF(filePath);
-      extractedTexts.push(extractedData); // Store each extracted data in array
+      extractedTexts.push(extractedData); 
     }
 
-    setExtractedTexts(extractedTexts); // Set the extracted texts array in context
+    setExtractedTexts(extractedTexts); 
     setProcessing(false);
   };
 
   const removeFiles = () => {
     setFileNames([]);
-    setExtractedTexts([]); // Reset extracted texts
+    setExtractedTexts([]); 
     setExtractingData(false);
     setProcessing(false);
   };
@@ -80,10 +80,10 @@ function DragAndDrop({ setNumForms }) {
   return (
     <div className="dragAndDrop">
       <div className="select-folder-button">
-        <button className="select-folder" onClick={handleSelectHardCodedFolder}>Select Folder (Hard-coded)</button>
+        <button className="select-folder" onClick={handleSelectHardCodedFolder}>Izberi mapo</button>
         {fileNames.length > 0 &&
           fileNames.map((name, index) => (
-            <p key={index}>Selected file: {name}</p>
+            <p key={index}>Izbrane datoteke: {name}</p>
           ))}
       </div>
       <div className="drag-and-drop-buttons">
@@ -91,7 +91,7 @@ function DragAndDrop({ setNumForms }) {
           {processing ? "Processing..." : "Process Data"}
         </button>
         <button onClick={removeFiles} className="remove-file-button">
-          Remove File
+          Izbriši datoteke
         </button>
       </div>
     </div>

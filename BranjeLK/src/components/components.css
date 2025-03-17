@@ -9,6 +9,12 @@ p {
 
 button {
   outline: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  border-radius: 5px;
 }
 
 .blackline {
@@ -38,6 +44,7 @@ button {
   border-top-right-radius: 2rem;
   border-bottom: 2px solid;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .dragNDropPolje {
@@ -45,60 +52,49 @@ button {
   flex-direction: column;
   background-color: rgb(98, 98, 98);
   height: 80%;
-  width: 40wv;
+  width: 40vw;
   border-style: dashed;
   border-width: 2px;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  overflow-y: auto;
+
   margin-bottom: 0.3vw;
 }
 
 .dragNDropPolje:hover {
   background-color: rgb(85, 85, 85);
   color: white;
-  transition: 0.5;
+  transition: 0.5s;
 }
 
-.select-folder-button {
+.select-folder-button,
+.process-data-button,
+.remove-file-button,
+.prikazi-ugotovitve button,
+.obdelaj-podatke-button,
+.odstrani-datoteko-button,
+.export-button {
   display: flex;
-  flex-direction: column;
-  width: auto;
-  justify-content: center;
-  height: auto;
-}
-.select-folder {
-  display: flex;
-  width: 100%;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  padding: 0.6rem 1.2rem;
+  font-weight: bold;
+  flex-direction: column;
 }
 
-.process-data-button {
-  width: 48%;
-}
-
-.remove-file-button {
-  width: 48%;
+button:hover {
+  filter: brightness(1.1);
 }
 
 .drag-and-drop-buttons {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  width: 11.5vw;
+  width: auto;
 }
 
-.obdelaj-podatke-button {
-  background-color: rgb(88, 169, 88);
-  border-radius: 5px;
-}
-
-.odstrani-datoteko-button {
-  background-color: rgb(252, 47, 47);
-  border-radius: 5px;
+.process-data-button {
+  margin-right: 5px;
 }
 
 /*FORMS*/
@@ -124,14 +120,6 @@ button {
   width: 12%;
   overflow-y: auto;
   overflow-x: auto;
-  /*scrollbar-width: none;*/
-}
-
-.forms-box:-webkit-scrollbar {
-}
-
-.forms-box-inside {
-  display: flex;
 }
 
 .popUpOkno {
@@ -161,9 +149,6 @@ button {
   margin-bottom: 10px;
   font-size: 14px;
   color: black;
-}
-
-.popUpButton {
 }
 
 .popUpClose {
@@ -209,7 +194,4 @@ button {
 .export-polje-i {
   display: flex;
   margin: auto;
-}
-
-.export-polje-span {
 }

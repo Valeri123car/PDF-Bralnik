@@ -4,32 +4,30 @@ const PdfContext = createContext();
 
 export const PdfProvider = ({ children }) => {
   const [pdfFiles, setPdfFiles] = useState([]);
-  const [extractedTexts, setExtractedTexts] = useState([]); // Store an array of extracted texts
+  const [extractedTexts, setExtractedTexts] = useState([]);
   const [extractingData, setExtractingData] = useState(false);
-  const [geoPisarna, setGeoPisarna] = useState('');
-  const [stevilka, setStevilka] = useState('');
-  const [ko, setKo] = useState('');
-  const [stevilkaElaborata, setStevilkaElaborata] = useState('');
-  const [stTehPos, setStTehPos] = useState('');
-  const [pi, setPi] = useState('');
-  const [dopolnitiDo, setDopolnitiDo] = useState('');
-  const [vodjaPostopka, setVodjaPostopka] = useState('');
-  const [ugotovitevUprave, setUgotovitevUprave] = useState('');
+  
+  // Store form data as an array of objects instead of individual state variables
+  const [formData, setFormData] = useState([]);
+  
+  // Update a specific form's data
+  const updateFormData = (index, data) => {
+    setFormData(prevForms => {
+      const newForms = [...prevForms];
+      if (!newForms[index]) {
+        newForms[index] = {};
+      }
+      newForms[index] = {...newForms[index], ...data};
+      return newForms;
+    });
+  };
 
   return (
     <PdfContext.Provider value={{
       pdfFiles, setPdfFiles,
-      extractedTexts, setExtractedTexts, // Provide extractedTexts as an array
+      extractedTexts, setExtractedTexts,
       extractingData, setExtractingData,
-      geoPisarna, setGeoPisarna,
-      stevilka, setStevilka,
-      ko, setKo,
-      stevilkaElaborata, setStevilkaElaborata,
-      stTehPos, setStTehPos,
-      pi, setPi,
-      dopolnitiDo, setDopolnitiDo,
-      vodjaPostopka, setVodjaPostopka,
-      ugotovitevUprave, setUgotovitevUprave
+      formData, setFormData, updateFormData
     }}>
       {children}
     </PdfContext.Provider>
