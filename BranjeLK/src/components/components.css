@@ -7,6 +7,10 @@ p {
   margin: 0;
 }
 
+.button {
+  outline: none;
+}
+
 .blackline {
   display: flex;
 }
@@ -57,11 +61,22 @@ p {
   transition: 0.5;
 }
 
+.select-folder-button {
+  display: flex;
+  flex-direction: row;
+  width: 20vw;
+  justify-content: center;
+}
+.select-folder {
+  display: flex;
+  width: 100vw;
+}
+
 .drag-and-drop-buttons {
   display: flex;
   flex-direction: row;
-  justify-content: space-evenly;
-  width: 40vw;
+  justify-content: space-between;
+  width: 20vw;
 }
 
 .obdelaj-podatke-button {

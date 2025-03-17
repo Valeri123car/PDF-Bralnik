@@ -79,7 +79,7 @@ function DragAndDrop({ setNumForms }) {
 
   return (
     <div className="dragAndDrop">
-      <div>
+      <div className="select-folder-button">
         <button onClick={handleSelectHardCodedFolder}>Select Folder (Hard-coded)</button>
         {fileNames.length > 0 &&
           fileNames.map((name, index) => (
