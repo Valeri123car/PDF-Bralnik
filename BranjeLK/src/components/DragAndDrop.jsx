@@ -12,22 +12,23 @@ function DragAndDrop({ setNumForms }) {
   const { setPdfFiles, setExtractedTexts, setExtractingData } = usePdf();
   const [fileNames, setFileNames] = useState([]);
   const [processing, setProcessing] = useState(false);
+  const [folderPath, setFolderPath] = useState("C:/Users/valer/OneDrive - Univerza v Mariboru/Namizje/GZ-Celje/BranjeLK/PDF-bralnik/BranjeLK/pdf-doc");
+  const [isEditing, setIsEditing] = useState(false);
 
-  const hardCodedFolderPath = "C:/Users/valer/OneDrive - Univerza v Mariboru/Namizje/GZ-Celje/BranjeLK/PDF-bralnik/BranjeLK/pdf-doc";
-
-  const handleSelectHardCodedFolder = async () => {
+  const handleSelectFolder = async () => {
     const fs = window.require("fs");
     const path = window.require("path");
 
     try {
-      const files = fs.readdirSync(hardCodedFolderPath);
+      const files = fs.readdirSync(folderPath);
       const pdfFiles = files.filter(file => path.extname(file) === ".pdf");
 
       setFileNames(pdfFiles);
-      setPdfFiles(pdfFiles.map(file => ({ path: path.join(hardCodedFolderPath, file), name: file })));
+      setPdfFiles(pdfFiles.map(file => ({ path: path.join(folderPath, file), name: file })));
       setNumForms(pdfFiles.length);
     } catch (error) {
-      console.error("prislo je do napake pri dostopanju datoteke:", error);
+      console.error("Prišlo je do napake pri dostopanju datoteke:", error);
+      alert(`Napaka pri dostopu do mape: ${error.message}`);
     }
   };
 
@@ -61,7 +62,7 @@ function DragAndDrop({ setNumForms }) {
     let extractedTexts = [];
 
     for (const fileName of fileNames) {
-      const filePath = `${hardCodedFolderPath}/${fileName}`;
+      const filePath = `${folderPath}/${fileName}`;
       const extractedData = await extractTextFromPDF(filePath);
       extractedTexts.push(extractedData); 
     }
@@ -77,20 +78,72 @@ function DragAndDrop({ setNumForms }) {
     setProcessing(false);
   };
 
+  const toggleEditPath = () => {
+    setIsEditing(!isEditing);
+  };
+
+  const handlePathChange = (e) => {
+    setFolderPath(e.target.value);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      setIsEditing(false);
+    }
+  };
+
   return (
     <div className="dragAndDrop">
-      <div className="select-folder-button">
-        <button className="select-folder" onClick={handleSelectHardCodedFolder}>Izberi mapo</button>
-        {fileNames.length > 0 &&
-          fileNames.map((name, index) => (
-            <p key={index}>Izbrane datoteke: {name}</p>
-          ))}
+      <div className="folder-path-section">
+        <div className="folder-path-container">
+          {isEditing ? (
+            <input 
+              type="text" 
+              value={folderPath} 
+              onChange={handlePathChange} 
+              onBlur={() => setIsEditing(false)}
+              onKeyDown={handleKeyDown}
+              autoFocus
+              className="folder-path-input"
+            />
+          ) : (
+            <div className="folder-path-display" onClick={toggleEditPath}>
+              <span title={folderPath}>{folderPath}</span>
+              <button className="edit-path-button" onClick={toggleEditPath}>
+                Uredi
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+      
+      <div className="select-folder-button">
+        <button className="select-folder" onClick={handleSelectFolder}>Izberi mapo</button>
+        {fileNames.length > 0 && (
+          <div className="selected-files">
+            <p>Izbrane datoteke ({fileNames.length}):</p>
+            <div className="files-list">
+              {fileNames.map((name, index) => (
+                <p key={index}>{name}</p>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      
       <div className="drag-and-drop-buttons">
-        <button onClick={handleProcessData} className="process-data-button" disabled={processing}>
+        <button 
+          onClick={handleProcessData} 
+          className="process-data-button" 
+          disabled={processing || fileNames.length === 0}
+        >
           {processing ? "Processing..." : "Process Data"}
         </button>
-        <button onClick={removeFiles} className="remove-file-button">
+        <button 
+          onClick={removeFiles} 
+          className="remove-file-button"
+          disabled={fileNames.length === 0}
+        >
           Izbriši datoteke
         </button>
       </div>

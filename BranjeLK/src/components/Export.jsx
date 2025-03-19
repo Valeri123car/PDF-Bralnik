@@ -32,56 +32,75 @@ function Export() {
       reader.readAsArrayBuffer(uploadedFile);
     }
   };
-
+  
   const exportToExcel = async () => {
     if (!file || !workbook) {
       alert("Najprej naložite Excel datoteko.");
       return;
     }
-
+  
     setIsExporting(true);
     setError(null);
     setSuccessMessage("");
-
+  
     try {
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-
+  
       let jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
       
-      // If spreadsheet is empty or new, create header row
       if (jsonData.length === 0) {
-        jsonData.push(["Zap. št", "Geodetska pisarna", "Številka", "K.O", "Št. elaborata", "Št. tehničnega postopka", "P.I", "Dopolniti do", "Vodja postopka", "Ugotovitev uprave"]);
+        jsonData.push(["Zap. št", "Geodetska pisarna", "Številka", "K.O", "Št. elaborata", "Št. tehničnega postopka", "P.I", "Dopolniti do", "Vodja postopka", "Ugotovitev uprave", "Komentar"]);
       }
-
-      // Get the last sequential number
-      let lastSequentialNumber = jsonData.length > 1 ? jsonData.length : 0;
-
-      // Add a row for each form in formData
+  
+      let lastSequentialNumber = jsonData.length > 1 ? jsonData[jsonData.length - 1][0] : 0;
+  
       for (let i = 0; i < formData.length; i++) {
         const form = formData[i];
-        if (form) {  // Make sure we have data for this form
-          const newRow = [
-            lastSequentialNumber + 1,
+        if (form) {
+          const newRowData = [
             form.geoPisarna || "",
             form.stevilka || "",
-            form.ko ? form.ko.split(",").join(", ") : "", // Handle multiple Katastrska občina values
+            form.ko ? form.ko.split(",").join(", ") : "", 
             form.stevilkaElaborata || "",
             form.stTehPos || "",
             form.pi || "",
             form.dopolnitiDo || "",
             form.vodjaPostopka || "",
-            form.ugotovitevUprave || ""
+            form.ugotovitevUprave || "",
+            existingComment || ""
           ];
           
-          jsonData.push(newRow);
-          lastSequentialNumber++;
+          const isDuplicate = jsonData.slice(1).some(row => {
+            return (
+              row[1] === newRowData[0] && 
+              row[2] === newRowData[1] && 
+              row[3] === newRowData[2] && 
+              row[4] === newRowData[3] && 
+              row[5] === newRowData[4] && 
+              row[6] === newRowData[5] && 
+              row[7] === newRowData[6] && 
+              row[8] === newRowData[7] && 
+              row[9] === newRowData[8]    
+            );
+          });
+          
+        
+          if (!isDuplicate) {
+            lastSequentialNumber++;
+            const newRow = [lastSequentialNumber, ...newRowData];
+            jsonData.push(newRow);
+          }
         }
       }
-
+  
       const updatedWorksheet = XLSX.utils.aoa_to_sheet(jsonData);
       workbook.Sheets[sheetName] = updatedWorksheet;
-
+  
+      const updatedWorkbook = {...workbook};
+      updatedWorkbook.Sheets[sheetName] = updatedWorksheet;
+      setWorkbook(updatedWorkbook);
+  
       const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
       
       const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
@@ -100,7 +119,7 @@ function Export() {
       setIsExporting(false);
     }
   };
-
+  
   return (
     <div className="export">
       <div className="export-polje">
