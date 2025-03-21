@@ -3,7 +3,7 @@ import { usePdf } from "./PdfContext";
 import PopUp from "./Popout";
 
 function Forms({ index = 0 }) {
-  const { extractedTexts, extractingData, pdfFiles, formData, updateFormData } = usePdf();
+  const { extractedTexts, extractingData, pdfFiles, formData, updateFormData} = usePdf();
   
   const [isPopUpVisible, setIsPopUpVisible] = useState(false);
   const [popUpText, setPopUpText] = useState("");
@@ -17,7 +17,8 @@ function Forms({ index = 0 }) {
     pi: '',
     dopolnitiDo: '',
     vodjaPostopka: '',
-    ugotovitevUprave: ''
+    ugotovitevUprave: '',
+    komentar: ""
   });
 
   useEffect(() => {
@@ -105,27 +106,29 @@ function Forms({ index = 0 }) {
         const cleanedUgotovitevUprave = ugotovitevUpraveMatch[1].trim();
         newFormState.ugotovitevUprave = cleanedUgotovitevUprave;
       }
+
+      // Important: preserve the existing comment from formState if it exists
+      newFormState.komentar = formState.komentar || "";
+      
       setFormState(newFormState);
       updateFormData(index, newFormState);
     }
-  }, [extractedTexts, extractingData, index]);
+  }, [extractedTexts, extractingData, index, formState.komentar]);  // Add komentar to dependencies
   
   const handleInputChange = (field) => (event) => {
     const updatedValue = event.target.value;
     
-    if (field === 'ko') {
+    if (field === 'ko' && event.target.value) {
       const formattedKo = updatedValue.split(',').map(item => item.trim()).join(', ');
-      console.log("Updated K.O value:", formattedKo);
       setFormState(prev => {
-      const updated = {...prev, ko: koMatch[1].trim()};
-      updateFormData(index, {ko: koMatch[1].trim()});
-      return updated;
-  });
-
+        const updated = {...prev, ko: formattedKo};
+        updateFormData(index, updated); // Pass the entire updated object
+        return updated;
+      });
     } else {
       setFormState(prev => {
         const updated = {...prev, [field]: updatedValue};
-        updateFormData(index, {[field]: updatedValue});
+        updateFormData(index, updated); // Pass the entire updated object
         return updated;
       });
     }
@@ -139,7 +142,7 @@ function Forms({ index = 0 }) {
   };
 
   const handleDeleteForm = () => {
-    setFormState({
+    const emptyForm = {
       geoPisarna: '',
       stevilka: '',
       ko: '',
@@ -148,24 +151,15 @@ function Forms({ index = 0 }) {
       pi: '',
       dopolnitiDo: '',
       vodjaPostopka: '',
-      ugotovitevUprave: ''
-    });
+      ugotovitevUprave: '',
+      komentar: ''
+    };
 
-    updateFormData(index, {
-      geoPisarna: '',
-      stevilka: '',
-      ko: '',
-      stevilkaElaborata: '',
-      stTehPos: '',
-      pi: '',
-      dopolnitiDo: '',
-      vodjaPostopka: '',
-      ugotovitevUprave: ''
-    });
+    setFormState(emptyForm);
+    updateFormData(index, emptyForm);
   };
 
-
-  return (
+  return (<>
     <div className="forms">
       <div className="forms-header">
         <h3>PDF Form {index + 1}</h3>
@@ -178,6 +172,13 @@ function Forms({ index = 0 }) {
           value={formState.geoPisarna}
           placeholder="Geodetska pisarna"
           onChange={handleInputChange('geoPisarna')}
+        />
+        <label>Komentar:</label>
+        <input
+          type="text"
+          value={formState.komentar}
+          placeholder="Komentar"
+          onChange={handleInputChange('komentar')}
         />
       </div>
       <div className="forms-box">
@@ -243,6 +244,7 @@ function Forms({ index = 0 }) {
       {isPopUpVisible && <PopUp text={popUpText} onClose={togglePopUp} />}
       <div><button onClick={handleDeleteForm}>Izbriši forme</button></div>
     </div>
+    </>
   );
 }
 

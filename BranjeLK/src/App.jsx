@@ -9,6 +9,10 @@ import { PdfProvider } from "./components/PdfContext";
 function App() {
   const [numForms, setNumForms] = useState(1);
 
+  const deleteForms =() => {
+    setNumForms(0)
+  }
+
   return (
     <>
       <Header />
@@ -17,6 +21,7 @@ function App() {
         {[...Array(numForms)].map((_, index) => (
           <Forms key={index} index={index} />
         ))}
+        <div className="delete-all-forms"><button onClick={deleteForms}>Izbriši vse forme</button></div>
         <Export/>
       </PdfProvider>
     </>

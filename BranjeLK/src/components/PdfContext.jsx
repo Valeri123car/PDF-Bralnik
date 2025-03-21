@@ -7,10 +7,8 @@ export const PdfProvider = ({ children }) => {
   const [extractedTexts, setExtractedTexts] = useState([]);
   const [extractingData, setExtractingData] = useState(false);
   
-  // Store form data as an array of objects instead of individual state variables
   const [formData, setFormData] = useState([]);
   
-  // Update a specific form's data
   const updateFormData = (index, data) => {
     setFormData(prevForms => {
       const newForms = [...prevForms];
@@ -27,7 +25,7 @@ export const PdfProvider = ({ children }) => {
       pdfFiles, setPdfFiles,
       extractedTexts, setExtractedTexts,
       extractingData, setExtractingData,
-      formData, setFormData, updateFormData
+      formData, setFormData, updateFormData,
     }}>
       {children}
     </PdfContext.Provider>

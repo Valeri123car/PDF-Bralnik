@@ -119,6 +119,13 @@ button:hover {
   overflow: hidden;
 }
 
+.delete-all-forms {
+  width: 90vw;
+  display: flex;
+  justify-content: center;
+  background-color: rgb(98, 98, 98);
+}
+
 .forms-box {
   margin: 1rem;
   padding: 0.5rem;

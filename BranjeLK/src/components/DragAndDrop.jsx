@@ -139,13 +139,22 @@ function DragAndDrop({ setNumForms }) {
         >
           {processing ? "Processing..." : "Process Data"}
         </button>
-        <button 
-          onClick={removeFiles} 
-          className="remove-file-button"
-          disabled={fileNames.length === 0}
+        <div className="delete-forms">
+        <button className="reset-button" 
+            onClick={removeFiles}
+            style={{ 
+              backgroundColor: '#f44336', 
+              color: 'white',
+              padding: '8px 16px',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+            disabled={fileNames.length === 0}
         >
           Izbriši datoteke
         </button>
+        </div>
       </div>
     </div>
   );
